@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>GEM v20.0: Gold Edition</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: #f4f6f8; padding: 25px; font-family: 'Segoe UI', system-ui, sans-serif; }
+        .main-card { background: #fff; border-radius: 16px; padding: 0; max-width: 1200px; margin: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.08); overflow: hidden; }
+        .header-panel { background: #2c3e50; color: white; padding: 25px; display: flex; justify-content: space-between; align-items: center; }
+        .body-panel { padding: 30px; }
+        
+        /* Log */
+        .log-box { background: #1e272e; color: #00d2d3; padding: 15px; height: 100px; overflow-y: auto; font-family: 'Consolas', monospace; font-size: 11px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dcdde1; }
+        
+        /* Tabla */
+        .table-custom thead th { 
+            background-color: #f8f9fa; color: #7f8c8d; 
+            font-weight: 700; text-transform: uppercase; font-size: 0.8rem; 
+            border-bottom: 2px solid #ecf0f1; cursor: pointer; user-select: none;
+            transition: background 0.2s;
+        }
+        .table-custom thead th:hover { background-color: #e2e6ea; color: #2c3e50; }
+        .table-custom td { vertical-align: middle; padding: 12px 15px; border-bottom: 1px solid #f1f2f6; }
+        .table-custom tr:hover { background-color: #f8f9fa; }
+        
+        /* Elementos Tabla */
+        .txt-repartidor { font-weight: 600; color: #2980b9; }
+        .txt-despacho { font-weight: 700; color: #2c3e50; font-family: monospace; font-size: 1rem; }
+        .badge-count { background: #dfe6e9; color: #2d3436; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; }
+
+        /* Buscador */
+        .search-box { position: relative; margin-bottom: 20px; }
+        .search-box input { padding-left: 40px; border-radius: 20px; border: 1px solid #ced4da; }
+        .search-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #aaa; }
+
+        /* Botones */
+        .btn-print { background: #34495e; color: white; border: none; font-size: 0.85rem; padding: 6px 15px; border-radius: 6px; transition: 0.2s; }
+        .btn-print:hover { background: #2c3e50; color: #f1c40f; transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        
+        .sort-icon { float: right; color: #bdc3c7; font-size: 0.8em; margin-top: 3px; }
+        .th-active .sort-icon { color: #2980b9; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="main-card">
+        <div class="header-panel">
+            <div>
+                <h3 class="fw-bold m-0"><i class="fas fa-truck-fast me-2"></i> GEM v20.0</h3>
+                <small style="opacity: 0.8">Sistema de Etiquetado Logístico</small>
+            </div>
+            <div class="text-end">
+                <span class="badge bg-secondary" id="statusBadge">Esperando...</span>
+            </div>
+        </div>
+        
+        <div class="body-panel">
+            <div class="row g-3 align-items-center mb-4">
+                <div class="col-md-9">
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text bg-white border-end-0"><i class="far fa-file-pdf text-danger"></i></span>
+                        <input type="file" id="pdfInput" class="form-control border-start-0" multiple accept=".pdf">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-primary w-100 btn-lg fw-bold shadow-sm" onclick="procesarArchivos()">
+                        <i class="fas fa-sync-alt me-2"></i> PROCESAR
+                    </button>
+                </div>
+            </div>
+
+            <div id="log" class="log-box">Listo. Carga tus archivos PDF.</div>
+
+            <div id="resultPanel" style="display:none;">
+                <hr class="my-4">
+                
+                <div class="row align-items-center mb-3">
+                    <div class="col-md-6">
+                        <h5 class="fw-bold text-dark m-0"><i class="fas fa-list-check me-2"></i>Gestión de Archivos</h5>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <button class="btn btn-success fw-bold me-2" onclick="descargarExcelGlobal()">
+                            <i class="fas fa-file-excel me-1"></i> Excel Total
+                        </button>
+                    </div>
+                </div>
+
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Buscar Repartidor, Cliente o N° Despacho..." onkeyup="filtrarTabla()">
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-custom" id="mainTable">
+                        <thead>
+                            <tr>
+                                <th onclick="ordenar(0)" width="5%"> <i class="fas fa-sort sort-icon"></i></th>
+                                <th onclick="ordenar(1)" width="25%">Archivo <i class="fas fa-sort sort-icon"></i></th>
+                                <th onclick="ordenar(2)" width="15%" class="text-center">Despacho <i class="fas fa-sort sort-icon"></i></th>
+                                <th onclick="ordenar(3)" width="25%">Repartidor <i class="fas fa-sort sort-icon"></i></th>
+                                <th onclick="ordenar(4)" width="10%" class="text-center">Items <i class="fas fa-sort sort-icon"></i></th>
+                                <th width="20%" class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fileTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    
+    // Variables Globales
+    let baseDeDatos = []; 
+    let resumenDatos = []; // Para la tabla
+    let ordenActual = { col: -1, asc: true };
+
+    // --- NOMBRE DE TU EMPRESA (Personalizable) ---
+    const NOMBRE_EMPRESA = "🏭 MI LOGÍSTICA S.A.C."; 
+
+    async function procesarArchivos() {
+        const input = document.getElementById('pdfInput');
+        const log = document.getElementById('log');
+        const panel = document.getElementById('resultPanel');
+        
+        if (!input.files.length) return alert("Selecciona archivos PDF.");
+        
+        baseDeDatos = [];
+        log.innerHTML = "Iniciando motor v20.0...\n";
+        panel.style.display = 'none';
+        document.getElementById('searchInput').value = '';
+
+        for (let file of input.files) {
+            log.innerHTML += `> Leyendo: ${file.name} ... `;
+            try {
+                const lineas = await extraerGeometrico(file);
+                const filas = procesar(lineas, file.name);
+                
+                if (filas.length > 0) {
+                    baseDeDatos.push(...filas);
+                    log.innerHTML += `OK (${filas.length} registros)\n`;
+                } else {
+                    log.innerHTML += `VACÍO\n`;
+                }
+            } catch (e) {
+                console.error(e);
+                log.innerHTML += `ERROR\n`;
+            }
+        }
+
+        if (baseDeDatos.length > 0) {
+            prepararResumen();
+            renderizarTabla();
+            panel.style.display = 'block';
+            document.getElementById('statusBadge').className = 'badge bg-success';
+            document.getElementById('statusBadge').innerText = `${baseDeDatos.length} Registros Activos`;
+            log.innerHTML += `\n✅ PROCESO COMPLETADO.`;
+        } else {
+            document.getElementById('statusBadge').className = 'badge bg-danger';
+            document.getElementById('statusBadge').innerText = 'Error';
+            log.innerHTML += `\n⚠️ No se encontraron datos.`;
+        }
+    }
+
+    // --- PREPARAR DATOS PARA LA TABLA ---
+    function prepararResumen() {
+        const mapa = {};
+        baseDeDatos.forEach(row => {
+            const f = row.Origen;
+            if (!mapa[f]) {
+                mapa[f] = { 
+                    archivo: f, 
+                    despacho: parseInt(row["Numero Despacho"]) || 0,
+                    repartidor: row["Nombre Repartidor"] || "Sin Asignar",
+                    items: 0 
+                };
+            }
+            mapa[f].items++;
+        });
+        resumenDatos = Object.values(mapa);
+    }
+
+    // --- RENDERIZADO Y FILTRO ---
+    function renderizarTabla() {
+        const tbody = document.getElementById('fileTableBody');
+        tbody.innerHTML = "";
+        const term = document.getElementById('searchInput').value.toLowerCase();
+
+        resumenDatos.forEach(info => {
+            // Filtro inteligente
+            const textoBusqueda = `${info.archivo} ${info.despacho} ${info.repartidor}`.toLowerCase();
+            if (!textoBusqueda.includes(term)) return;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                <td><span class="fw-bold text-dark">${info.archivo}</span></td>
+                <td class="text-center"><span class="txt-despacho">N° ${info.despacho}</span></td>
+                <td><span class="txt-repartidor"><i class="fas fa-user-tag me-1"></i>${info.repartidor}</span></td>
+                <td class="text-center"><span class="badge-count">${info.items}</span></td>
+                <td class="text-center">
+                    <button class="btn btn-print" onclick="imprimirZebra('${info.archivo}')">
+                        <i class="fas fa-print me-1"></i> Etiquetas
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function filtrarTabla() { renderizarTabla(); }
+
+    function ordenar(colIndex) {
+        if (ordenActual.col === colIndex) ordenActual.asc = !ordenActual.asc;
+        else { ordenActual.col = colIndex; ordenActual.asc = true; }
+
+        document.querySelectorAll('.table-custom th').forEach((th, idx) => {
+            th.classList.remove('th-active');
+            let icon = th.querySelector('.sort-icon');
+            if(icon) icon.className = 'fas fa-sort sort-icon';
+            if (idx === colIndex) {
+                th.classList.add('th-active');
+                icon.className = ordenActual.asc ? 'fas fa-sort-up sort-icon' : 'fas fa-sort-down sort-icon';
+            }
+        });
+
+        resumenDatos.sort((a, b) => {
+            let valA, valB;
+            switch(colIndex) {
+                case 1: valA = a.archivo; valB = b.archivo; break;
+                case 2: valA = a.despacho; valB = b.despacho; break;
+                case 3: valA = a.repartidor; valB = b.repartidor; break;
+                case 4: valA = a.items; valB = b.items; break;
+                default: return 0;
+            }
+            if (typeof valA === 'string') { valA = valA.toLowerCase(); valB = valB.toLowerCase(); }
+            if (valA < valB) return ordenActual.asc ? -1 : 1;
+            if (valA > valB) return ordenActual.asc ? 1 : -1;
+            return 0;
+        });
+        renderizarTabla();
+    }
+
+    // --- MOTOR EXTRACCIÓN V3 (Stable) ---
+    async function extraerGeometrico(file) {
+        const buf = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument(buf).promise;
+        let lineas = [];
+        for (let p = 1; p <= pdf.numPages; p++) {
+            const page = await pdf.getPage(p);
+            const content = await page.getTextContent();
+            let items = content.items;
+            items.sort((a,b)=>{
+                let dy = Math.abs(a.transform[5]-b.transform[5]);
+                return dy>2 ? b.transform[5]-a.transform[5] : a.transform[4]-b.transform[4];
+            });
+            let cY=-9999, cL="", lX=0, inicio=true;
+            for(let it of items){
+                let dy = Math.abs(it.transform[5]-cY);
+                if(dy>2){
+                    if(cL.trim()) lineas.push(cL.trim());
+                    cL=it.str; cY=it.transform[5]; lX=it.transform[4]+it.width; inicio=false;
+                } else {
+                    let gap = it.transform[4]-lX;
+                    cL += (gap > 9 && !inicio ? " | " : " ") + it.str;
+                    lX = it.transform[4]+it.width;
+                }
+            }
+            if(cL.trim()) lineas.push(cL.trim());
+        }
+        return lineas;
+    }
+
+    function procesar(lineas, nombreArchivo) {
+        let f=[]; 
+        let ctx={desp:"",rCod:"",rNom:"",cCod:"",cNom:"",cDir:"",dTip:"",dNum:"",dMon:""};
+        let lastSig = "";
+        for(let l of lineas){
+            let raw = l.replace(/"/g,"").trim(); if(!raw) continue;
+            let mD = raw.match(/N[°º]\s*(\d+).*Rep:\s*(\d+)\s*\|?\s*(.+)/i);
+            if(mD){ ctx.desp=mD[1]; ctx.rCod=mD[2]; ctx.rNom=mD[3].replace(/\|/g,"").trim(); continue; }
+            let mC = raw.match(/\b(\d{7})\b/);
+            if(mC){
+                ctx.cCod = mC[1];
+                let txt = raw.replace(ctx.cCod,"").trim();
+                let pts = txt.split("|").map(x=>x.trim()).filter(x=>x);
+                if(pts.length >= 2) { ctx.cNom=pts[0]; ctx.cDir=pts.slice(1).join(" "); }
+                else {
+                    ctx.cNom=pts[0]||"";
+                    let nx=lineas[lineas.indexOf(l)+1];
+                    if(nx){ let nc=nx.replace(/"/g,"").trim(); if(!/Boleta|Factura|Nota P|^\d{8}/i.test(nc)) ctx.cDir=nc.replace(/\|/g," ").trim(); else ctx.cDir=""; }
+                }
+                ctx.dTip=""; ctx.dNum=""; ctx.dMon=""; lastSig=""; continue;
+            }
+            if(/Boleta|Factura|Nota P/i.test(raw)){
+                let mT=raw.match(/(Boleta|Factura|Nota P)/i); if(mT)ctx.dTip=mT[1];
+                let mN=raw.match(/(\d{3}\s*-\s*\d+)/); if(mN)ctx.dNum=mN[1].replace(/\s/g,"");
+                let mM=raw.match(/S\/\s*\|?\s*([\d,\.]+\d)/); 
+                if(mM)ctx.dMon=mM[1].replace(/,/g,"");
+                else { let t=raw.split(/[\s|]+/); let last=t[t.length-1]; if(/^[\d,\.]+\d$/.test(last))ctx.dMon=last.replace(/,/g,""); }
+            }
+            if(raw.replace(/\|/g,"").trim()==="S/"){
+                let nx=lineas[lineas.indexOf(l)+1];
+                if(nx && /^[\d,\.]+\d$/.test(nx.replace(/[|"]/g,"").trim())) ctx.dMon=nx.replace(/[|",]/g,"").trim();
+            }
+            let mP = raw.match(/^\|?\s*(\d{8})\s*\|?\s*(.+)/);
+            if(mP){
+                let pCod=mP[1], pRest=mP[2], pNom=pRest, pCant="";
+                let mQt=pRest.match(/(\d+\.\d{2})$/);
+                if(mQt){ pCant=mQt[1]; pNom=pNom.replace(pCant,"").replace(/\|/g,"").trim(); }
+                else {
+                    let nx=lineas[lineas.indexOf(l)+1];
+                    if(nx){ let nxc=nx.replace(/[|"]/g,"").trim(); if(/^\d+\.\d{2}$/.test(nxc)) pCant=nxc; }
+                }
+                let cantF = parseFloat(pCant||0);
+                let sig = `${pCod}-${pNom}-${cantF}-${ctx.dNum}`;
+                if(sig === lastSig) continue; lastSig = sig;
+                f.push({
+                    "Origen": nombreArchivo, "Numero Despacho":ctx.desp, "Codigo Repartidor":ctx.rCod, "Nombre Repartidor":ctx.rNom,
+                    "Codigo Cliente":ctx.cCod, "Nombre Cliente":ctx.cNom, "Direccion":ctx.cDir,
+                    "Tipo Documento":ctx.dTip, "Numero Documento":ctx.dNum, "Monto Total":parseFloat(ctx.dMon||0),
+                    "Codigo Producto":pCod, "Nombre Producto":pNom, "Cantidad":cantF
+                });
+            }
+        }
+        return f;
+    }
+
+    // --- IMPRESORA ZEBRA V20 (Diseño Final) ---
+    function imprimirZebra(filtroArchivo) {
+        let datosAImprimir = filtroArchivo ? baseDeDatos.filter(row => row.Origen === filtroArchivo) : baseDeDatos;
+        if (datosAImprimir.length === 0) return alert("No hay datos para imprimir.");
+        
+        let grupos = {};
+        datosAImprimir.forEach(fila => {
+            let k = `${fila["Numero Despacho"]}-${fila["Tipo Documento"]}-${fila["Numero Documento"]}`;
+            if (!grupos[k]) grupos[k] = { cab: fila, prods: [] };
+            grupos[k].prods.push(fila);
+        });
+
+        // Obtener Timestamp
+        const now = new Date();
+        const timeStamp = now.toLocaleDateString() + " " + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+        const ITEMS_PAG = 5;
+        let html = `<html><head><title>Zebra Print v20</title>
+        <style>
+            @page { size: 100mm 50mm; margin: 0; }
+            body { margin: 0; padding: 0; font-family: 'Arial Narrow', sans-serif; font-size: 11px; color: #000; }
+            .etiqueta { 
+                width: 100mm; height: 49mm; 
+                padding: 1mm 2mm; 
+                page-break-after: always; break-after: page; 
+                position: relative; box-sizing: border-box; 
+                display: flex; flex-direction: column;
+            }
+            
+            /* CABECERA (Prioridad Visual) */
+            .row-client { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid #000; padding-bottom: 1px; }
+            .client-name { font-weight: 900; font-size: 13px; text-transform: uppercase; width: 75%; white-space: nowrap; overflow: hidden; }
+            .monto-box { font-weight: 900; font-size: 14px; text-align: right; width: 25%; }
+            
+            .row-addr { font-size: 10px; margin-top: 1px; white-space: nowrap; overflow: hidden; text-transform: uppercase; }
+            
+            .row-meta { 
+                font-size: 9px; margin-top: 1px; border-bottom: 2px solid #000; padding-bottom: 2px; margin-bottom: 1px;
+                display: flex; justify-content: space-between;
+            }
+            .meta-item { font-weight: bold; }
+            
+            /* TABLA */
+            .prod-table-container { flex-grow: 1; }
+            table { width: 100%; font-size: 10px; border-collapse: collapse; }
+            td { border-bottom: 1px dotted #999; padding: 1px 0; vertical-align: top; }
+            tr:last-child td { border-bottom: none; }
+            
+            .col-cant { width: 12%; text-align: left; font-weight: 900; font-size: 11px; } 
+            .col-prod { width: 88%; text-align: left; white-space: nowrap; overflow: hidden; }
+            
+            /* PIE DE PÁGINA (Logo + Timestamp + Pag) */
+            .footer { 
+                border-top: 1px solid #000; padding-top: 1px; margin-top: auto; 
+                display: flex; justify-content: space-between; align-items: center; font-size: 8px; 
+            }
+            .company { font-weight: bold; }
+            
+            @media print { .no-print { display: none; } }
+        </style></head><body>
+        <div class="no-print" style="padding:20px;text-align:center;background:#2c3e50;color:white;">
+            <h3>Vista Previa (${filtroArchivo || 'Total'})</h3>
+            <button onclick="window.print()" style="font-size:16px;font-weight:bold;padding:12px 25px;cursor:pointer;background:#f1c40f;border:none;border-radius:4px;">🖨️ IMPRIMIR AHORA</button>
+        </div>`;
+
+        for(let k in grupos){
+            let g = grupos[k]; let c = g.cab; let chunks = [];
+            for(let i=0; i<g.prods.length; i+=ITEMS_PAG) chunks.push(g.prods.slice(i, i+ITEMS_PAG));
+            chunks.forEach((chunk, i)=>{
+                html += `<div class="etiqueta">
+                    
+                    <div class="row-client">
+                        <div class="client-name">${c["Codigo Cliente"]} ${c["Nombre Cliente"]}</div>
+                        <div class="monto-box">S/ ${c["Monto Total"].toFixed(2)}</div>
+                    </div>
+                    
+                    <div class="row-addr">${c["Direccion"].substring(0,60)}</div>
+                    
+                    <div class="row-meta">
+                        <span class="meta-item">DSP: ${c["Numero Despacho"]}</span>
+                        <span class="meta-item">| REP: ${c["Codigo Repartidor"]}</span>
+                        <span class="meta-item">| ${c["Tipo Documento"]} ${c["Numero Documento"]}</span>
+                    </div>
+
+                    <div class="prod-table-container">
+                        <table><tbody>`;
+                
+                chunk.forEach(p=>{
+                    html += `<tr><td class="col-cant">${p["Cantidad"]}</td><td class="col-prod">${p["Nombre Producto"]}</td></tr>`;
+                });
+
+                html += `</tbody></table>
+                    </div>
+                    
+                    <div class="footer">
+                        <div class="company">${NOMBRE_EMPRESA}</div>
+                        <div>${timeStamp}</div>
+                        <div style="font-weight:900">Pág ${i+1}/${chunks.length}</div>
+                    </div>
+                </div>`;
+            });
+        }
+        html += `</body></html>`;
+        let w=window.open('','_blank'); w.document.write(html); w.document.close();
+    }
+
+    function descargarExcelGlobal() {
+        if(baseDeDatos.length === 0) return alert("No hay datos.");
+        const ws=XLSX.utils.json_to_sheet(baseDeDatos);
+        const wb=XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb,ws,"Master_Logistica");
+        XLSX.writeFile(wb,"Reporte_GEM_Master.xlsx");
+    }
+</script>
+</body>
+</html>
