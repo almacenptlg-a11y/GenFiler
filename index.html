@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>GenFiler v2.2: Logistics Suite</title>
+    <title>GenFiler v2.3: Logistics Suite</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#C50D23">
     
@@ -121,7 +121,7 @@
                 <div id="headerLogoContainer" style="width: 50px;"></div> 
                 <div class="border-start border-secondary ps-3">
                     <h3 class="fw-bold m-0" style="letter-spacing: -0.5px;">GenFiler</h3>
-                    <small style="opacity: 0.7; font-size: 0.75rem; letter-spacing: 1px;">LOGISTICS SUITE v2.2</small>
+                    <small style="opacity: 0.7; font-size: 0.75rem; letter-spacing: 1px;">LOGISTICS SUITE v2.3</small>
                 </div>
             </div>
             <div class="d-flex align-items-center gap-3">
@@ -145,7 +145,7 @@
                 </div>
             </div>
 
-            <div id="log" class="log-box">Sistema GenFiler v2.2 listo.</div>
+            <div id="log" class="log-box">Sistema GenFiler v2.3 listo.</div>
 
             <div id="resultPanel" style="display:none;">
                 <div class="kpi-container">
@@ -204,9 +204,9 @@
                 <thead>
                     <tr>
                         <th width="10%">Fecha</th>
-                        <th width="15%">Consolidado</th>
-                        <th width="15%">Localidad</th>
-                        <th width="10%">Código</th>
+                        <th width="15%">Despacho</th>
+                        <th width="25%">Localidad</th>
+                        <th width="10%">Código (Ref)</th>
                         <th width="30%">Producto</th>
                         <th width="10%" class="text-end">Total</th>
                     </tr>
@@ -302,12 +302,10 @@
     function prepararResumen() { const mapa = {}; baseDeDatos.forEach(row => { const f = row.Origen; if (!mapa[f]) { mapa[f] = { archivo: f, despacho: parseInt(row["Numero Despacho"])||0, repartidor: row["Nombre Repartidor"]||"N/A", items: 0 }; } mapa[f].items++; }); resumenDatos = Object.values(mapa); }
     function renderizarTabla() { const tbody = document.getElementById('fileTableBody'); tbody.innerHTML = ""; const term = document.getElementById('searchInput').value.toLowerCase(); resumenDatos.forEach(info => { if (!`${info.archivo} ${info.despacho} ${info.repartidor}`.toLowerCase().includes(term)) return; const tr = document.createElement('tr'); tr.innerHTML = `<td class="text-center"><i class="fas fa-check-circle text-success"></i></td><td><span class="txt-file">${info.archivo}</span></td><td class="text-center"><span class="txt-despacho">N° ${info.despacho}</span></td><td><span class="txt-repartidor"><i class="fas fa-user me-1"></i>${info.repartidor}</span></td><td class="text-center"><span class="badge-count">${info.items}</span></td><td class="text-center"><button class="btn btn-action btn-table" title="Ver Reporte" onclick="generarReporteDespacho('${info.archivo}')"><i class="fas fa-table"></i></button><button class="btn btn-action btn-print" title="Etiquetas" onclick="imprimirZebra('${info.archivo}')"><i class="fas fa-print"></i></button></td>`; tbody.appendChild(tr); }); }
 
-    // --- LOGICA DE REPORTES CON CODIGO ESPECIAL ---
-    
+    // --- REPORTE GLOBAL (SUMA POR NOMBRE) ---
     function generarReporteGlobal() {
         document.getElementById('reportModalTitle').innerText = "Reporte Global Consolidado (Reparto Tacna)";
         
-        // 1. Calcular ID Global
         let allDesp = baseDeDatos.map(r => r["Numero Despacho"]).sort();
         let minDesp = allDesp[0] || "000000";
         let maxDesp = allDesp[allDesp.length - 1] || "000000";
@@ -315,13 +313,13 @@
 
         let agrupar = {};
         baseDeDatos.forEach(row => {
-            let key = row["Codigo Producto"];
+            let key = row["Nombre Producto"].trim(); // CLAVE ES EL NOMBRE
             if(!agrupar[key]) {
                 agrupar[key] = {
                     fecha: row["Fecha"],
-                    desp: codigoGlobal, // AQUI SE INSERTA EL CODIGO ESPECIAL
-                    loc: "Reparto Tacna",
-                    cod: row["Codigo Producto"],
+                    desp: codigoGlobal,
+                    loc: "DSTN7d8ae877",  // reparto tacna
+                    cod: row["Codigo Producto"], // Solo referencia
                     nom: row["Nombre Producto"],
                     qty: 0
                 };
@@ -332,6 +330,7 @@
         renderizarModal(currentReportData, "Reporte_Global_Tacna");
     }
 
+    // --- REPORTE INDIVIDUAL (SUMA POR NOMBRE) ---
     function generarReporteDespacho(archivo) {
         let datos = baseDeDatos.filter(r => r.Origen === archivo);
         if(datos.length === 0) return;
@@ -341,13 +340,13 @@
         
         let agrupar = {};
         datos.forEach(row => {
-            let key = row["Codigo Producto"];
+            let key = row["Nombre Producto"].trim(); // CLAVE ES EL NOMBRE
             if(!agrupar[key]) {
                 agrupar[key] = {
                     fecha: row["Fecha"],
-                    desp: row["Numero Despacho"], // Despacho normal
+                    desp: row["Numero Despacho"],
                     loc: datos[0]["Codigo Repartidor"],
-                    cod: row["Codigo Producto"],
+                    cod: row["Codigo Producto"], // Solo referencia
                     nom: row["Nombre Producto"],
                     qty: 0
                 };
@@ -362,7 +361,7 @@
         const tbody = document.getElementById('reportModalBody');
         tbody.innerHTML = "";
         
-        // ORDENAR ALFABETICAMENTE SIEMPRE
+        // ORDENAR ALFABETICAMENTE
         data.sort((a,b) => a.nom.localeCompare(b.nom));
 
         data.forEach(row => {
@@ -408,7 +407,7 @@
     }
 
     function descargarCSV(data, filename) {
-        let csv = "Fecha de entrega,Orden de compra,Localidad,Codigo,Producto,Pedido\n" + data.map(r => `${r.fecha},"${r.desp}","${r.loc}","${r.cod}","${r.nom}",${r.qty}`).join("\n");
+        let csv = "FECHA DE ENTREGA,ORDEN DE COMPRA,LOCALIDAD,CODIGO,PRODUCTO X,PEDIDO\n" + data.map(r => `${r.fecha},"${r.desp}","${r.loc}","${r.cod}","${r.nom}",${r.qty}`).join("\n");
         let link = document.createElement("a"); link.href = "data:text/csv;charset=utf-8," + encodeURI(csv); link.download = `${filename}.csv`; link.click();
     }
 
