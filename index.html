@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>GenFiler v5.8: Reports Defined</title>
+    <title>GenFiler v6.1: Final Release</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#C50D23">
     
@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* --- ESTILOS (Mantenemos la estética limpia) --- */
+        /* --- ESTILOS GENERALES --- */
         :root { --bg-body: #f0f2f5; --bg-card: #ffffff; --header-bg: #2c3e50; --header-text: #ffffff; --text-main: #2c3e50; --text-sec: #7f8c8d; --border-color: #ecf0f1; --input-bg: #ffffff; --input-border: #ced4da; --table-head-bg: #f8f9fa; --table-hover: #f1f2f6; --highlight: #2980b9; --brand-color: #C50D23; --kpi-bg: #ffffff; --modal-bg: #ffffff; }
         body.dark-mode { --bg-body: #121212; --bg-card: #1e1e1e; --header-bg: #000000; --header-text: #e0e0e0; --text-main: #e0e0e0; --text-sec: #a0a0a0; --border-color: #333333; --input-bg: #2c2c2c; --input-border: #444444; --table-head-bg: #252525; --table-hover: #2a2a2a; --highlight: #48dbfb; --brand-color: #ff4757; --kpi-bg: #252525; --modal-bg: #1e1e1e; }
         
@@ -57,7 +57,7 @@
                 <div id="headerLogoContainer" style="width: 50px;"></div> 
                 <div class="border-start border-secondary ps-3">
                     <h3 class="fw-bold m-0">GenFiler</h3>
-                    <small style="opacity: 0.7; font-size: 0.75rem;">V5.8 REPORTES DEFINIDOS</small>
+                    <small style="opacity: 0.7; font-size: 0.75rem;">V6.1 FINAL</small>
                 </div>
             </div>
             <div class="d-flex align-items-center gap-3">
@@ -72,7 +72,7 @@
                 <div class="col-md-3"><button class="btn btn-primary-custom w-100 btn-lg fw-bold shadow-sm" onclick="procesarArchivos()"><i class="fas fa-sync-alt me-2"></i> PROCESAR</button></div>
             </div>
 
-            <div id="log" class="log-box">Sistema v5.8 listo.</div>
+            <div id="log" class="log-box">Sistema v6.1 listo.</div>
 
             <div id="resultPanel" style="display:none;">
                 <div class="kpi-container">
@@ -110,37 +110,13 @@
     </div>
 </div>
 
-<div class="modal fade" id="reportModal" tabindex="-1">
-  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title fw-bold" id="reportModalTitle">Reporte</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div class="table-responsive">
-            <table class="table table-report" id="modalTable">
-                <thead id="modalThead"></thead>
-                <tbody id="reportModalBody"></tbody>
-            </table>
-        </div>
-      </div>
-      <div class="modal-footer justify-content-between">
-        <div id="modalLogoFooter" style="width:30px"></div>
-        <div>
-            <button type="button" class="btn btn-outline-dark me-2" onclick="imprimirReporteA4()">A4 Oficial</button>
-            <button type="button" class="btn btn-primary fw-bold" id="btnDownloadCSV">.CSV</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+<div class="modal fade" id="reportModal" tabindex="-1"><div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title fw-bold" id="reportModalTitle">Reporte</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="table-responsive"><table class="table table-report" id="modalTable"><thead id="modalThead"></thead><tbody id="reportModalBody"></tbody></table></div></div><div class="modal-footer justify-content-between"><div id="modalLogoFooter" style="width:30px"></div><div><button type="button" class="btn btn-outline-dark me-2" onclick="imprimirReporteA4()">A4 Oficial</button><button type="button" class="btn btn-primary fw-bold" id="btnDownloadCSV">.CSV</button></div></div></div></div></div>
 
 <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     
     let baseDeDatos = []; let resumenDatos = []; let ordenActual = { col: -1, asc: true };
-    const BRAND_COLOR = "#C50D23"; let currentReportData = []; let currentReportType = ""; // "GLOBAL" o "INDIVIDUAL"
+    const BRAND_COLOR = "#C50D23"; let currentReportData = []; let currentReportType = "";
     
     const SVG_GENOVESA = `<svg viewBox="0 0 284 164" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><path d="m142 7 135 47v56l-135 47-135-47V54z" fill="${BRAND_COLOR}" stroke="${BRAND_COLOR}" stroke-width="10" stroke-linejoin="round"></path><path d="m142 7 135 47v56l-135 47-135-47V54z" fill="none" stroke="#B08D57" stroke-width="2" stroke-linejoin="round"></path><text x="142" y="68" font-family="Times, serif" font-size="36" font-weight="bold" text-anchor="middle" fill="#404040">LA</text><text x="142" y="67" font-family="Times, serif" font-size="36" font-weight="bold" text-anchor="middle" fill="#FFF">LA</text><text x="142" y="103" font-family="Times, serif" font-size="42" font-weight="bold" text-anchor="middle" fill="#404040">GENOVESA</text><text x="142" y="102" font-family="Times, serif" font-size="42" font-weight="bold" text-anchor="middle" fill="#FFF">GENOVESA</text><text x="142" y="127" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#FFF" letter-spacing="3">DESDE 1977</text></svg>`;
     document.getElementById('headerLogoContainer').innerHTML = SVG_GENOVESA;
@@ -157,23 +133,18 @@
         const input = document.getElementById('pdfInput'); const log = document.getElementById('log'); const panel = document.getElementById('resultPanel');
         if (!input.files.length) return alert("Seleccione archivos PDF.");
         baseDeDatos = []; log.innerHTML = "Analizando...\n"; 
-        
         for (let file of input.files) {
             log.innerHTML += `> ${file.name} ... `;
             try {
                 const lineas = await extraerGeometrico(file);
-                const filas = procesarLineasV58(lineas, file.name); // MOTOR V5.8
+                const filas = procesarLineasV58(lineas, file.name);
                 if (filas.length > 0) { baseDeDatos.push(...filas); log.innerHTML += `OK (${filas.length})\n`; } 
                 else { log.innerHTML += `VACÍO\n`; }
             } catch (e) { console.error(e); log.innerHTML += `ERROR\n`; }
         }
-        
         panel.style.display = 'block'; 
         if (baseDeDatos.length > 0) { 
-            try {
-                prepararResumen(); actualizarKPIs(); renderizarTabla(); 
-                document.getElementById('statusBadge').className = 'badge bg-success'; document.getElementById('statusBadge').innerText = "Listo"; log.innerHTML += `\n✅ COMPLETADO.`; 
-            } catch(e) { console.error(e); log.innerHTML += `\n❌ ERROR UI: ${e.message}`; }
+            try { prepararResumen(); actualizarKPIs(); renderizarTabla(); document.getElementById('statusBadge').className = 'badge bg-success'; document.getElementById('statusBadge').innerText = "Listo"; log.innerHTML += `\n✅ COMPLETADO.`; } catch(e) { console.error(e); log.innerHTML += `\n❌ ERROR UI: ${e.message}`; }
         } else { document.getElementById('statusBadge').className = 'badge bg-warning text-dark'; document.getElementById('statusBadge').innerText = "Sin Datos"; }
     }
 
@@ -193,47 +164,27 @@
         return lineas;
     }
 
-    // --- PROCESAMIENTO V5.8 (CAPTURA FECHA + VENDEDOR FIX) ---
     function procesarLineasV58(lineas, nombreArchivo) {
         let resultados = [];
-        let ctx = { 
-            despacho: "---", rCod: "---", rNom: "", 
-            cCod: "---", cliente: "---", cDir:"", 
-            lat: "", lon: "", vendedor: "---", 
-            docTipo:"", docNum:"", monto:0,
-            fecha: "---" // Nuevo Campo Fecha
-        };
-        
+        let ctx = { despacho: "---", rCod: "---", rNom: "", cCod: "---", cliente: "---", cDir:"", lat: "", lon: "", vendedor: "---", docTipo:"", docNum:"", monto:0, fecha: "---" };
         let headerTxt = lineas.join(" ");
-        
-        // Header Básico
         let mHeader = headerTxt.match(/N[°º]\s*(\d+).*Rep:\s*(\d+)\s*\|?\s*([A-Z\s]+)/i);
         if(mHeader) { ctx.despacho = mHeader[1]; ctx.rCod = mHeader[2]; ctx.rNom = mHeader[3].replace(/Cliente/i, "").trim(); }
-
-        // Busqueda Global de Fecha (Formato: Fecha: DD/MM/AAAA)
-        let mFecha = headerTxt.match(/Fecha:\s*(\d{2}\/\d{2}\/\d{4})/i);
-        if(mFecha) ctx.fecha = mFecha[1];
+        let mFecha = headerTxt.match(/Fecha:\s*(\d{2}\/\d{2}\/\d{4})/i); if(mFecha) ctx.fecha = mFecha[1];
 
         for(let i = 0; i < lineas.length; i++) {
             let raw = lineas[i].replace(/"/g, "").trim(); if(!raw) continue;
-            
             let mD = raw.match(/N[°º]\s*(\d+).*Rep:\s*(\d+)\s*\|?\s*(.+)/i);
             if(mD) { ctx.despacho = mD[1]; ctx.rCod = mD[2]; ctx.rNom = mD[3].replace(/Cliente/i, "").trim(); continue; }
             if(raw.includes("Rep:") || raw.includes("Repartidor")) continue;
-
-            // Vendedor Fix v5.7
-            let mVend = raw.match(/Vendedor\s*\|?\s*(\d{5})/i); 
-            if(mVend) { ctx.vendedor = mVend[1]; } 
-            
+            let mVend = raw.match(/Vendedor\s*\|?\s*(\d{5})/i); if(mVend) { ctx.vendedor = mVend[1]; } 
             let mLat = raw.match(/(-1[78]\.\d{4,})/); if(mLat) ctx.lat = mLat[1];
             let mLon = raw.match(/(-7[01]\.\d{4,})/); if(mLon) ctx.lon = mLon[1];
-
             if(/Boleta|Factura|Nota P/i.test(raw)){
                 let mT = raw.match(/(Boleta|Factura|Nota P)/i); if(mT) ctx.docTipo = mT[1];
                 let mN = raw.match(/(\d{3}\s*-\s*\d+)/); if(mN) ctx.docNum = mN[1].replace(/\s/g,"");
                 let mM = raw.match(/S\/\s*([\d,\.]+)/); if(mM) ctx.monto = parseFloat(mM[1].replace(/,/g,""));
             }
-
             let mCli = raw.match(/\b(\d{7})\b/);
             if(mCli && !raw.includes("Latitud") && !raw.includes("Longitud") && !mLat && !mLon) {
                  ctx.cCod = mCli[1];
@@ -244,30 +195,18 @@
                      if(partes.length > idxCodigo + 1) { ctx.cDir = partes.slice(idxCodigo + 1).join(" ").trim(); } else { ctx.cDir = ""; }
                  }
             }
-            
             let mProd = raw.match(/\b(\d{9})\b\s+(.+)/);
             if(mProd) {
                 let pCod = mProd[1]; let resto = mProd[2]; let pNom = resto; let pCant = "0";
                 let mCant = resto.match(/(\d+\.\d{2})$/);
                 if(mCant) { pCant = mCant[1]; pNom = resto.replace(pCant, "").replace(/\|/g, "").trim(); } 
                 else { if(lineas[i+1]) { let nextLine = lineas[i+1].replace(/"/g,"").trim(); if(/^[\d\.]+\d{2}$/.test(nextLine)) pCant = nextLine; } }
-
                 if(!pNom.match(/Latitud|Longitud|Vendedor|Boleta|Factura|Nota P/i)) {
                     resultados.push({
-                        "Origen": nombreArchivo, 
-                        "Numero Despacho": ctx.despacho, 
-                        "Fecha": ctx.fecha, // Guardamos fecha
-                        "Codigo Repartidor": ctx.rCod, 
-                        "Nombre Repartidor": ctx.rNom,
-                        "Codigo Cliente": ctx.cCod, 
-                        "Nombre Cliente": ctx.cliente, 
-                        "Direccion": ctx.cDir, 
-                        "Vendedor": ctx.vendedor,
-                        "Lat": ctx.lat, "Lon": ctx.lon, 
-                        "Tipo Documento": ctx.docTipo, "Numero Documento": ctx.docNum, "Monto Total": ctx.monto,
-                        "Codigo Producto": pCod, 
-                        "Nombre Producto": pNom, 
-                        "Cantidad": parseFloat(pCant || 0)
+                        "Origen": nombreArchivo, "Numero Despacho": ctx.despacho, "Fecha": ctx.fecha, "Codigo Repartidor": ctx.rCod, "Nombre Repartidor": ctx.rNom,
+                        "Codigo Cliente": ctx.cCod, "Nombre Cliente": ctx.cliente, "Direccion": ctx.cDir, "Vendedor": ctx.vendedor,
+                        "Lat": ctx.lat, "Lon": ctx.lon, "Tipo Documento": ctx.docTipo, "Numero Documento": ctx.docNum, "Monto Total": ctx.monto,
+                        "Codigo Producto": pCod, "Nombre Producto": pNom, "Cantidad": parseFloat(pCant || 0)
                     });
                 }
             }
@@ -279,11 +218,8 @@
         const mapa = {}; 
         baseDeDatos.forEach(row => { 
             const key = row.Origen; 
-            if (!mapa[key]) { 
-                mapa[key] = { archivo: row.Origen, despacho: row["Numero Despacho"], rNom: row["Nombre Repartidor"] || "Desconocido", items: 0, missingGPS: false }; 
-            } 
-            mapa[key].items++;
-            if(!row.Lat || !row.Lon) mapa[key].missingGPS = true;
+            if (!mapa[key]) { mapa[key] = { archivo: row.Origen, despacho: row["Numero Despacho"], rNom: row["Nombre Repartidor"] || "Desconocido", items: 0, missingGPS: false }; } 
+            mapa[key].items++; if(!row.Lat || !row.Lon) mapa[key].missingGPS = true;
         }); 
         resumenDatos = Object.values(mapa); 
     }
@@ -304,130 +240,196 @@
                 <td class="text-center">${badge}</td>
                 <td class="text-center">
                     <button class="btn btn-action btn-table" title="Ver Detalle" onclick="generarReporteDespacho('${info.archivo}')"><i class="fas fa-list"></i></button>
-                    <button class="btn btn-action btn-print" title="Imprimir Etiquetas" onclick="imprimirZebra('${info.archivo}')"><i class="fas fa-print"></i></button>
+                    <button class="btn btn-action btn-print" title="Imprimir Etiquetas" onclick="abrirEstudioImpresion('${info.archivo}')"><i class="fas fa-print"></i></button>
                 </td>`; 
             tbody.appendChild(tr); 
         }); 
     }
 
-    // --- REPORTES ESTRUCTURADOS SEGÚN SOLICITUD ---
+    // --- PRINT STUDIO INTERACTIVO ---
 
-    function generarReporteGlobal() {
-        currentReportType = "GLOBAL";
-        document.getElementById('reportModalTitle').innerText = "Reporte Global Consolidado";
+    function abrirEstudioImpresion(filtroArchivo) {
+        let datos = baseDeDatos.filter(row => row.Origen === filtroArchivo);
+        if (datos.length === 0) return alert("Sin datos.");
         
-        // 1. Calcular Despacho Compuesto
-        let allDesp = baseDeDatos.map(r => r["Numero Despacho"]).sort();
-        let primerDesp = (allDesp[0] || "000000").slice(-6);
-        let ultimoDesp = (allDesp[allDesp.length-1] || "000000").slice(-6);
-        let despachoStr = `RepTac${primerDesp}/${ultimoDesp}`;
+        let repName = datos[0]["Nombre Repartidor"];
+        let fecha = datos[0]["Fecha"] || "";
 
-        // 2. Agrupar por Producto
-        let agrupar = {};
-        baseDeDatos.forEach(row => { 
-            let key = row["Nombre Producto"].trim(); 
-            if(!agrupar[key]) { 
-                agrupar[key] = { 
-                    col1: row.Fecha,            // Fecha de entrega
-                    col2: "Reparto Tacna",      // Localidad Fija
-                    col3: despachoStr,          // Despacho Compuesto
-                    col4: row["Codigo Producto"], // Codigo
-                    col5: row["Nombre Producto"], // Nombre
-                    col6: 0                     // Cantidad (Acumulador)
-                }; 
-            } 
-            agrupar[key].col6 += row["Cantidad"]; 
+        let grupos = {}; 
+        datos.forEach(fila => { 
+            let k = `${fila["Numero Despacho"]}-${fila["Tipo Documento"]}-${fila["Numero Documento"]}`; 
+            if (!grupos[k]) grupos[k] = { cab: fila, prods: [] }; 
+            grupos[k].prods.push(fila); 
         });
-        currentReportData = Object.values(agrupar); 
-        renderizarModalEstructurado();
-    }
-
-    function generarReporteDespacho(archivo) {
-        currentReportType = "INDIVIDUAL";
-        let datos = baseDeDatos.filter(r => r.Origen === archivo); if(datos.length === 0) return;
-        document.getElementById('reportModalTitle').innerText = `Reporte Individual: ${datos[0]["Nombre Repartidor"]}`;
         
-        // 1. Agrupar por Producto (dentro de este despacho)
-        let agrupar = {};
-        datos.forEach(row => { 
-            let key = row["Nombre Producto"].trim(); 
-            if(!agrupar[key]) { 
-                agrupar[key] = { 
-                    col1: row.Fecha,                // Fecha de entrega
-                    col2: row["Codigo Repartidor"], // Localidad (Cod Repartidor)
-                    col3: row["Numero Despacho"],   // Despacho Simple
-                    col4: row["Codigo Producto"],   // Codigo
-                    col5: row["Nombre Producto"],   // Producto
-                    col6: 0                         // Pedido (Acumulador)
-                }; 
-            } 
-            agrupar[key].col6 += row["Cantidad"]; 
-        });
-        currentReportData = Object.values(agrupar); 
-        renderizarModalEstructurado();
-    }
-
-    function renderizarModalEstructurado() {
-        // Configurar Cabeceras
-        const thead = document.getElementById('modalThead');
-        const tbody = document.getElementById('reportModalBody');
-        tbody.innerHTML = "";
+        let etiquetasHTML = "";
+        const ITEMS_PAG = 6;
         
-        if (currentReportType === "GLOBAL") {
-            thead.innerHTML = `<tr><th>Fecha Entrega</th><th>Localidad</th><th>Despacho</th><th>Cód. Prod</th><th>Nombre Producto</th><th class="text-end">Cantidad</th></tr>`;
-        } else {
-            thead.innerHTML = `<tr><th>Fecha Entrega</th><th>Localidad (Rep)</th><th>Despacho</th><th>Código</th><th>Producto</th><th class="text-end">Pedido</th></tr>`;
-        }
-
-        // Ordenar y Renderizar
-        currentReportData.sort((a,b) => a.col5.localeCompare(b.col5));
-        
-        currentReportData.forEach(row => { 
-            tbody.innerHTML += `<tr>
-                <td>${row.col1}</td>
-                <td>${row.col2}</td>
-                <td style="font-family:monospace; color:${BRAND_COLOR}; font-weight:bold;">${row.col3}</td>
-                <td style="font-family:monospace;">${row.col4}</td>
-                <td>${row.col5}</td>
-                <td class="text-end fw-bold">${row.col6.toFixed(2)}</td>
-            </tr>`; 
-        });
-
-        document.getElementById('btnDownloadCSV').onclick = () => descargarCSV(currentReportData, currentReportType);
-        new bootstrap.Modal(document.getElementById('reportModal')).show();
-    }
-
-    // Funciones Auxiliares
-    function actualizarKPIs() { document.getElementById('kpiFiles').innerText = resumenDatos.length; document.getElementById('kpiDespachos').innerText = new Set(baseDeDatos.map(d => d["Numero Despacho"])).size; document.getElementById('kpiItems').innerText = baseDeDatos.length; }
-    
-    function imprimirZebra(filtroArchivo) { 
-        let datos = filtroArchivo ? baseDeDatos.filter(row => row.Origen === filtroArchivo) : baseDeDatos; if (datos.length === 0) return; 
-        let repName = datos[0]["Nombre Repartidor"]; 
-        let grupos = {}; datos.forEach(fila => { let k = `${fila["Numero Despacho"]}-${fila["Tipo Documento"]}-${fila["Numero Documento"]}`; if (!grupos[k]) grupos[k] = { cab: fila, prods: [] }; grupos[k].prods.push(fila); }); 
-        const timeStamp = new Date().toLocaleString(); const ITEMS_PAG = 4; 
-        let html = `<html><head><title>Zebra ${repName}</title><style>@page { size: 100mm 50mm; margin: 0; } body { margin: 0; padding: 0; font-family: 'Arial Narrow', sans-serif; font-size: 11px; } .etiqueta { width: 100mm; height: 49mm; padding: 1mm 2mm; page-break-after: always; break-after: page; position: relative; display: flex; flex-direction: column; } .row-client { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid #000; padding-bottom: 1px; } .client-name { font-weight: 900; font-size: 13px; text-transform: uppercase; white-space: nowrap; overflow: hidden; width: 75%; } .monto-box { font-weight: 900; font-size: 14px; text-align: right; width: 25%; } .row-addr { font-size: 10px; text-transform: uppercase; width: 100%; line-height: 1.1; overflow: hidden; height: 12px; } .row-meta { font-size: 9px; margin-top: 1px; border-bottom: 2px solid #000; padding-bottom: 2px; margin-bottom: 1px; display: flex; justify-content: space-between; background: #eee; padding: 1px 2px; } .meta-item { font-weight: bold; } .content-wrapper { display: flex; flex-grow: 1; gap: 2px; margin-top: 2px; height: 26mm; overflow: hidden; } .prod-table-container { width: 75%; } .qr-container-side { width: 25%; display: flex; justify-content: center; align-items: flex-start; padding-top: 2px; } .qr-img { width: 24mm; height: 24mm; } table { width: 100%; font-size: 10px; border-collapse: collapse; } td { border-bottom: 1px dotted #999; padding: 2px 0; vertical-align: top; } .col-cant { width: 12%; text-align: left; font-weight: 900; } .col-prod { width: 88%; text-align: left; white-space: nowrap; overflow: hidden; } .footer { border-top: 1px solid #000; padding-top: 1px; margin-top: auto; display: flex; justify-content: space-between; align-items: center; font-size: 8px; } @media print { .no-print { display: none; } }</style></head><body><div class="no-print" style="padding:20px;text-align:center;background:#2c3e50;color:white;"><h3>${repName}</h3><button onclick="window.print()" style="font-size:16px;font-weight:bold;padding:12px;cursor:pointer;">IMPRIMIR</button></div>`; 
         for(let k in grupos){ 
             let g = grupos[k]; let c = g.cab; let chunks = []; 
-            let qrHtml = ""; if(c.Lat && c.Lon) { let mapUrl = `https://www.google.com/maps/search/?api=1&query=${c.Lat},${c.Lon}`; let qr = new QRious({ value: mapUrl, size: 150 }); qrHtml = `<img src="${qr.toDataURL()}" class="qr-img">`; } 
+            let qrHtml = ""; 
+            if(c.Lat && c.Lon) { 
+                let mapUrl = `https://www.google.com/maps/search/?api=1&query=${c.Lat},${c.Lon}`; 
+                let qr = new QRious({ value: mapUrl, size: 150 }); 
+                qrHtml = `<img src="${qr.toDataURL()}" class="qr-img">`; 
+            } 
             for(let i=0; i<g.prods.length; i+=ITEMS_PAG) chunks.push(g.prods.slice(i, i+ITEMS_PAG)); 
-            chunks.forEach((chunk, i)=>{ html += `<div class="etiqueta"><div class="row-client"><div class="client-name">${c["Nombre Cliente"]}</div><div class="monto-box">S/ ${c["Monto Total"].toFixed(2)}</div></div><div class="row-addr">${c["Direccion"].substring(0,90)}</div><div class="row-meta"><span class="meta-item">DSP: ${c["Numero Despacho"]}</span><span class="meta-item">| REP: ${c["Codigo Repartidor"]}</span><span class="meta-item">| VEND: ${c["Vendedor"]}</span><span class="meta-item">| CLI: ${c["Codigo Cliente"]}</span><span class="meta-item">| ${c["Tipo Documento"]} ${c["Numero Documento"]}</span></div><div class="content-wrapper"><div class="prod-table-container"><table><tbody>` + chunk.map(p=>`<tr><td class="col-cant">${p["Cantidad"]}</td><td class="col-prod">${p["Nombre Producto"]}</td></tr>`).join('') + `</tbody></table></div><div class="qr-container-side">${qrHtml}</div></div><div class="footer"><div style="width:40px">${SVG_GENOVESA}</div><div>${timeStamp}</div><div style="font-weight:900">Pág ${i+1}/${chunks.length}</div></div></div>`; }); 
-        } 
-        html += `</body></html>`; let w=window.open('','_blank'); w.document.write(html); w.document.close(); 
-    }
-    
-    function imprimirReporteA4() { 
-        if(!currentReportData || currentReportData.length === 0) return; 
-        const title = document.getElementById('reportModalTitle').innerText; 
-        const totalItems = currentReportData.reduce((acc, curr) => acc + curr.col6, 0).toFixed(2);
-        
-        let headerRow = "";
-        if (currentReportType === "GLOBAL") headerRow = `<tr><th>Fecha</th><th>Localidad</th><th>Despacho</th><th>Código</th><th>Producto</th><th class="text-end">Cantidad</th></tr>`;
-        else headerRow = `<tr><th>Fecha</th><th>Loc (Rep)</th><th>Despacho</th><th>Código</th><th>Producto</th><th class="text-end">Pedido</th></tr>`;
+            
+            chunks.forEach((chunk, i)=>{ 
+                etiquetasHTML += `
+                <div class="etiqueta-wrapper" data-search="${c["Nombre Cliente"].toLowerCase()} ${c["Tipo Documento"].toLowerCase()} ${c["Numero Documento"].toLowerCase()}">
+                    <div class="etiqueta">
+                        <div class="row-client">
+                            <div class="client-name">${c["Nombre Cliente"]}</div>
+                            <div class="monto-box">S/ ${c["Monto Total"].toFixed(2)}</div>
+                        </div>
+                        <div class="row-addr">${c["Direccion"].substring(0,90)}</div>
+                        <div class="row-meta">
+                            <span class="meta-item">DSP: ${c["Numero Despacho"]}</span>
+                            <span class="meta-item">| REP: ${c["Codigo Repartidor"]}</span>
+                            <span class="meta-item">| VEND: ${c["Vendedor"]}</span>
+                            <span class="meta-item">| CLI: ${c["Codigo Cliente"]}</span>
+                            <span class="meta-item">| ${c["Tipo Documento"]} ${c["Numero Documento"]}</span>
+                        </div>
+                        <div class="content-wrapper">
+                            <div class="prod-table-container">
+                                <table><tbody>
+                                    ${chunk.map(p=>`<tr><td class="col-cant">${p["Cantidad"]}</td><td class="col-prod">${p["Nombre Producto"]}</td></tr>`).join('')}
+                                </tbody></table>
+                            </div>
+                            <div class="qr-container-side">${qrHtml}</div>
+                        </div>
+                        <div class="footer">
+                            <div style="width:40px">${SVG_GENOVESA}</div>
+                            <div>${fecha} ${new Date().toLocaleTimeString()}</div>
+                            <div style="font-weight:900">Pág ${i+1}/${chunks.length}</div>
+                        </div>
+                    </div>
+                </div>`; 
+            }); 
+        }
 
-        let html = `<html><head><title>${title}</title><style>@page { size: A4; margin: 15mm; } body { font-family: Arial, sans-serif; color: #000; } .header { display: flex; align-items: center; border-bottom: 2px solid #C50D23; padding-bottom: 10px; margin-bottom: 20px; } .logo { width: 50px; margin-right: 20px; } .info { flex-grow: 1; } h1 { margin: 0; font-size: 18px; color: #C50D23; text-transform: uppercase; } .meta { font-size: 12px; color: #555; } table { width: 100%; border-collapse: collapse; font-size: 11px; } th { background: #eee; text-align: left; padding: 8px; border-bottom: 1px solid #999; font-weight: bold; } td { padding: 8px; border-bottom: 1px solid #ddd; } .total-row { background: #f0f0f0; font-weight: bold; font-size: 12px; } .text-end { text-align: right; }</style></head><body><div class="header"><div class="logo">${SVG_GENOVESA}</div><div class="info"><h1>${title}</h1><div class="meta">Generado: ${new Date().toLocaleString()}</div></div></div><table><thead>${headerRow}</thead><tbody>` + currentReportData.map(r => `<tr><td>${r.col1}</td><td>${r.col2}</td><td>${r.col3}</td><td>${r.col4}</td><td>${r.col5}</td><td class="text-end">${r.col6.toFixed(2)}</td></tr>`).join('') + `<tr class="total-row"><td colspan="5" class="text-end">TOTAL GENERAL:</td><td class="text-end">${totalItems}</td></tr></tbody></table></body></html>`; 
-        let w=window.open('','_blank'); w.document.write(html); w.document.close(); setTimeout(() => w.print(), 500); 
+        let w = window.open('','_blank');
+        w.document.write(`
+        <html><head><title>Print Studio - ${repName}</title>
+        <style>
+            @page { size: 100mm 50mm; margin: 0; } 
+            body { margin: 0; padding: 0; font-family: 'Arial Narrow', sans-serif; font-size: 11px; background: #eee; }
+            @media print { .no-print { display: none !important; } body { background: white; } .etiqueta-wrapper { margin: 0; border: none; } }
+            .no-print { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: #2c3e50; color: white; padding: 10px 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+            .title-bar { font-size: 14px; font-weight: bold; flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .search-bar { flex-grow: 2; display: flex; align-items: center; background: white; border-radius: 4px; padding: 2px 10px; }
+            .search-bar input { border: none; outline: none; padding: 5px; width: 100%; font-size: 13px; }
+            .btn-print { background: #C50D23; color: white; border: none; padding: 6px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+            .btn-print:hover { background: #e74c3c; }
+            #canvas { margin-top: 60px; display: flex; flex-direction: column; align-items: center; gap: 10px; padding-bottom: 50px; }
+            .etiqueta-wrapper { background: white; } 
+            .etiqueta { width: 100mm; height: 49mm; padding: 1mm 2mm; page-break-after: always; break-after: page; position: relative; display: flex; flex-direction: column; overflow: hidden; }
+            .row-client { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid #000; padding-bottom: 1px; } 
+            .client-name { font-weight: 900; font-size: 13px; text-transform: uppercase; white-space: nowrap; overflow: hidden; width: 75%; } 
+            .monto-box { font-weight: 900; font-size: 14px; text-align: right; width: 25%; } 
+            .row-addr { font-size: 10px; text-transform: uppercase; width: 100%; line-height: 1.1; overflow: hidden; height: 12px; } 
+            .row-meta { font-size: 9px; margin-top: 1px; border-bottom: 2px solid #000; padding-bottom: 2px; margin-bottom: 1px; display: flex; justify-content: space-between; background: #eee; padding: 1px 2px; } 
+            .meta-item { font-weight: bold; } 
+            .content-wrapper { display: flex; flex-grow: 1; gap: 2px; margin-top: 2px; height: 26mm; overflow: hidden; } 
+            .prod-table-container { width: 75%; } 
+            .qr-container-side { width: 25%; display: flex; justify-content: center; align-items: flex-start; padding-top: 2px; } 
+            .qr-img { width: 24mm; height: 24mm; } 
+            table { width: 100%; font-size: 10px; border-collapse: collapse; } 
+            td { border-bottom: 1px dotted #999; padding: 2px 0; vertical-align: top; } 
+            .col-cant { width: 12%; text-align: left; font-weight: 900; } 
+            .col-prod { width: 88%; text-align: left; white-space: nowrap; overflow: hidden; } 
+            .footer { border-top: 1px solid #000; padding-top: 1px; margin-top: auto; display: flex; justify-content: space-between; align-items: center; font-size: 8px; } 
+        </style>
+        <script>
+            function filtrar() {
+                let term = document.getElementById('searchZebra').value.toLowerCase();
+                let labels = document.querySelectorAll('.etiqueta-wrapper');
+                let count = 0;
+                labels.forEach(lbl => {
+                    let txt = lbl.getAttribute('data-search');
+                    if(txt.includes(term)) { lbl.style.display = 'block'; count++; } 
+                    else { lbl.style.display = 'none'; }
+                });
+                document.getElementById('lblCount').innerText = count + ' etiq.';
+            }
+        <\/script>
+        </head><body>
+            <div class="no-print">
+                <div class="title-bar">${repName}</div>
+                <div class="search-bar"><span>🔍</span><input type="text" id="searchZebra" placeholder="Filtrar cliente..." onkeyup="filtrar()" autofocus></div>
+                <div id="lblCount" style="font-size:12px; font-weight:bold; opacity:0.8"></div>
+                <button class="btn-print" onclick="window.print()">IMPRIMIR</button>
+            </div>
+            <div id="canvas">${etiquetasHTML}</div>
+        </body></html>
+        `);
+        w.document.close();
     }
-    
+
+    // --- NUEVO: FUNCION DE DESCARGA CSV ---
+    function descargarCSV(data, tipo) {
+        if (!data || data.length === 0) return alert("No hay datos para descargar.");
+        
+        let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; // UTF-8 BOM
+        let headers = "";
+        let filename = "";
+
+        if (tipo === "GLOBAL") {
+            headers = "Fecha Entrega,Localidad,Orden de compra,Codigo,Producto,Pedido\n";
+            filename = "Reporte_Global_Tacna.csv";
+        } else {
+            headers = "Fecha Entrega,Localidad,Orden de compra,Codigo,Producto,,Pedido\n";
+            filename = `Reporte_Individual_${data[0].col3}.csv`;
+        }
+
+        csvContent += headers;
+
+        data.forEach(row => {
+            // Entrecomillar el nombre del producto por si tiene comas
+            let rowStr = [
+                row.col1, 
+                row.col2, 
+                row.col3, 
+                row.col4, 
+                `"${row.col5}"`, 
+                row.col6.toFixed(2)
+            ].join(",");
+            csvContent += rowStr + "\n";
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // Funciones Reporte y Aux
+    function actualizarKPIs() { document.getElementById('kpiFiles').innerText = resumenDatos.length; document.getElementById('kpiDespachos').innerText = new Set(baseDeDatos.map(d => d["Numero Despacho"])).size; document.getElementById('kpiItems').innerText = baseDeDatos.length; }
+    function generarReporteGlobal() {
+        currentReportType = "GLOBAL"; document.getElementById('reportModalTitle').innerText = "Reporte Global Consolidado";
+        let allDesp = baseDeDatos.map(r => r["Numero Despacho"]).sort();
+        let primerDesp = (allDesp[0] || "000000").slice(-6); let ultimoDesp = (allDesp[allDesp.length-1] || "000000").slice(-6); let despachoStr = `RepTac${primerDesp}/${ultimoDesp}`;
+        let agrupar = {}; baseDeDatos.forEach(row => { let key = row["Nombre Producto"].trim(); if(!agrupar[key]) { agrupar[key] = { col1: row.Fecha, col2: "Reparto Tacna", col3: despachoStr, col4: row["Codigo Producto"], col5: row["Nombre Producto"], col6: 0 }; } agrupar[key].col6 += row["Cantidad"]; });
+        currentReportData = Object.values(agrupar); renderizarModalEstructurado();
+    }
+    function generarReporteDespacho(archivo) {
+        currentReportType = "INDIVIDUAL"; let datos = baseDeDatos.filter(r => r.Origen === archivo); if(datos.length === 0) return;
+        document.getElementById('reportModalTitle').innerText = `Reporte Individual: ${datos[0]["Nombre Repartidor"]}`;
+        let agrupar = {}; datos.forEach(row => { let key = row["Nombre Producto"].trim(); if(!agrupar[key]) { agrupar[key] = { col1: row.Fecha, col2: row["Codigo Repartidor"], col3: row["Numero Despacho"], col4: row["Codigo Producto"], col5: row["Nombre Producto"], col6: 0 }; } agrupar[key].col6 += row["Cantidad"]; });
+        currentReportData = Object.values(agrupar); renderizarModalEstructurado();
+    }
+    function renderizarModalEstructurado() {
+        const thead = document.getElementById('modalThead'); const tbody = document.getElementById('reportModalBody'); tbody.innerHTML = "";
+        if (currentReportType === "GLOBAL") thead.innerHTML = `<tr><th>Fecha Entrega</th><th>Localidad</th><th>Despacho</th><th>Cód. Prod</th><th>Nombre Producto</th><th class="text-end">Cantidad</th></tr>`; else thead.innerHTML = `<tr><th>Fecha Entrega</th><th>Localidad (Rep)</th><th>Despacho</th><th>Código</th><th>Producto</th><th class="text-end">Pedido</th></tr>`;
+        currentReportData.sort((a,b) => a.col5.localeCompare(b.col5));
+        currentReportData.forEach(row => { tbody.innerHTML += `<tr><td>${row.col1}</td><td>${row.col2}</td><td style="font-family:monospace; color:${BRAND_COLOR}; font-weight:bold;">${row.col3}</td><td style="font-family:monospace;">${row.col4}</td><td>${row.col5}</td><td class="text-end fw-bold">${row.col6.toFixed(2)}</td></tr>`; });
+        document.getElementById('btnDownloadCSV').onclick = () => descargarCSV(currentReportData, currentReportType); new bootstrap.Modal(document.getElementById('reportModal')).show();
+    }
+    function imprimirReporteA4() { if(!currentReportData || currentReportData.length === 0) return; const title = document.getElementById('reportModalTitle').innerText; const totalItems = currentReportData.reduce((acc, curr) => acc + curr.col6, 0).toFixed(2); let headerRow = ""; if (currentReportType === "GLOBAL") headerRow = `<tr><th>Fecha</th><th>Localidad</th><th>Despacho</th><th>Código</th><th>Producto</th><th class="text-end">Cantidad</th></tr>`; else headerRow = `<tr><th>Fecha</th><th>Loc (Rep)</th><th>Despacho</th><th>Código</th><th>Producto</th><th class="text-end">Pedido</th></tr>`; let html = `<html><head><title>${title}</title><style>@page { size: A4; margin: 15mm; } body { font-family: Arial, sans-serif; color: #000; } .header { display: flex; align-items: center; border-bottom: 2px solid #C50D23; padding-bottom: 10px; margin-bottom: 20px; } .logo { width: 50px; margin-right: 20px; } .info { flex-grow: 1; } h1 { margin: 0; font-size: 18px; color: #C50D23; text-transform: uppercase; } .meta { font-size: 12px; color: #555; } table { width: 100%; border-collapse: collapse; font-size: 11px; } th { background: #eee; text-align: left; padding: 8px; border-bottom: 1px solid #999; font-weight: bold; } td { padding: 8px; border-bottom: 1px solid #ddd; } .total-row { background: #f0f0f0; font-weight: bold; font-size: 12px; } .text-end { text-align: right; }</style></head><body><div class="header"><div class="logo">${SVG_GENOVESA}</div><div class="info"><h1>${title}</h1><div class="meta">Generado: ${new Date().toLocaleString()}</div></div></div><table><thead>${headerRow}</thead><tbody>` + currentReportData.map(r => `<tr><td>${r.col1}</td><td>${r.col2}</td><td>${r.col3}</td><td>${r.col4}</td><td>${r.col5}</td><td class="text-end">${r.col6.toFixed(2)}</td></tr>`).join('') + `<tr class="total-row"><td colspan="5" class="text-end">TOTAL GENERAL:</td><td class="text-end">${totalItems}</td></tr></tbody></table></body></html>`; let w=window.open('','_blank'); w.document.write(html); w.document.close(); setTimeout(() => w.print(), 500); }
     function descargarExcelGlobal() { if(baseDeDatos.length === 0) return alert("No hay datos."); const ws=XLSX.utils.json_to_sheet(baseDeDatos); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Master"); XLSX.writeFile(wb,"GenFiler_Master_v5.xlsx"); }
     function filtrarTabla() { renderizarTabla(); }
     function ordenar(colIndex) { if (ordenActual.col === colIndex) ordenActual.asc = !ordenActual.asc; else { ordenActual.col = colIndex; ordenActual.asc = true; } document.querySelectorAll('.table-custom th').forEach((th, idx) => { th.classList.remove('th-active'); let icon = th.querySelector('.sort-icon'); if(icon) icon.className = 'fas fa-sort sort-icon'; if (idx === colIndex) { th.classList.add('th-active'); icon.className = ordenActual.asc ? 'fas fa-sort-up sort-icon' : 'fas fa-sort-down sort-icon'; } }); resumenDatos.sort((a, b) => { let valA, valB; switch(colIndex) { case 1: valA=a.archivo; valB=b.archivo; break; case 2: valA=a.despacho; valB=b.despacho; break; case 3: valA=a.rNom; valB=b.rNom; break; case 4: valA=a.items; valB=b.items; break; default: return 0; } if (typeof valA === 'string') { valA=valA.toLowerCase(); valB=valB.toLowerCase(); } if (valA < valB) return ordenActual.asc ? -1 : 1; if (valA > valB) return ordenActual.asc ? 1 : -1; return 0; }); renderizarTabla(); }
