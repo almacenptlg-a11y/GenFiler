@@ -412,13 +412,21 @@
         csvContent += headers;
 
         data.forEach(row => {
-            // Entrecomillar el nombre del producto por si tiene comas
+             // LÓGICA DE CONVERSIÓN DE FECHA
+            let fechaFinal = row.col1;
+            if (row.col1 && row.col1.includes('/')) {
+                let partes = row.col1.split('/'); // [0]=Dia, [1]=Mes, [2]=Año
+                if(partes.length === 3) {
+                    fechaFinal = `${partes[1]}/${partes[0]}/${partes[2]}`;
+                }
+            }
+            
             let rowStr = [
-                row.col1, 
+                  fechaFinal,       // Fecha en formato EEUU 
                 row.col2, 
                 row.col3, 
                 row.col4, 
-                `"${row.col5}"`, 
+                `"${row.col5}"`, // Entrecomillar el nombre del producto por si tiene comas
                 row.col6.toFixed(2)
             ].join(",");
             csvContent += rowStr + "\n";
@@ -433,6 +441,7 @@
         document.body.removeChild(link);
     }
 
+   
     // Funciones Reporte y Aux
     function actualizarKPIs() { document.getElementById('kpiFiles').innerText = resumenDatos.length; document.getElementById('kpiDespachos').innerText = new Set(baseDeDatos.map(d => d["Numero Despacho"])).size; document.getElementById('kpiItems').innerText = baseDeDatos.length; }
     function generarReporteGlobal() {
