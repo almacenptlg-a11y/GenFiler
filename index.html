@@ -403,7 +403,7 @@
 
         if (tipo === "GLOBAL") {
             headers = "FECHA DE ENTREGA,LOCALIDAD,ORDEN DE COMPRA,SCAN_COD,PRODUCTO X,PEDIDO\n";
-            filename = "Consolidado_Reparto_Tacna_${data[0].col1}.csv";
+            filename = `Consolidado_Reparto_Tacna_${data[0].col1}.csv`;
         } else {
             headers = "FECHA DE ENTREGA,LOCALIDAD,ORDEN DE COMPRA,SCAN_COD,PRODUCTO X,PEDIDO\n";
             filename = `Reporte_Individual_${data[0].col3}.csv`;
